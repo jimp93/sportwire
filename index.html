@@ -1,0 +1,1060 @@
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPORT//WIRE — Neon Sports Feed</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23F7F4EC'/%3E%3Ccircle cx='50' cy='28' r='14' fill='%231B3B6F'/%3E%3Ccircle cx='28' cy='68' r='14' fill='%231B3B6F'/%3E%3Ccircle cx='72' cy='68' r='14' fill='%231B3B6F'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --ink:#14171F;
+    --panel:#1C212C;
+    --panel-2:#20263279;
+    --paper:#EDE7D9;
+    --brass:#B98D4B;
+    --wire-red:#A63D40;
+    --teal:#5C8D89;
+    --slate:#8A93AC;
+    --muted:#7C8394;
+    --hairline:#2C3140;
+    --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    --mono: 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:var(--sans);
+    min-height:100vh;
+  }
+  ::selection{background:var(--brass);color:var(--ink);}
+ 
+  /* ---------- warning banner ---------- */
+  .warning-banner{
+    background:#3A2A1A;
+    border-bottom:1px solid var(--wire-red);
+    color:#E8C9A0;
+    font-family:var(--mono);
+    font-size:12px;
+    padding:9px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .warning-banner button{
+    background:none;
+    border:none;
+    color:#E8C9A0;
+    cursor:pointer;
+    font-size:13px;
+    flex:none;
+    opacity:0.7;
+  }
+  .warning-banner button:hover{opacity:1;}
+ 
+  /* ---------- header ---------- */
+  .masthead{
+    border-bottom:1px solid var(--hairline);
+    padding:18px 24px 14px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+    background:
+      repeating-linear-gradient(180deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
+  }
+  .masthead-title{
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+  }
+  .masthead h1{
+    font-family:var(--serif);
+    font-weight:700;
+    font-size:28px;
+    letter-spacing:0.5px;
+    margin:0;
+    color:var(--paper);
+  }
+  .masthead .kicker{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--brass);
+    border:1px solid var(--brass);
+    padding:3px 7px;
+    border-radius:2px;
+  }
+  .clock-block{
+    text-align:right;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--muted);
+    letter-spacing:1px;
+  }
+  .clock-block .time{
+    font-size:18px;
+    color:var(--paper);
+    letter-spacing:2px;
+  }
+  .clock-block .time::after{
+    content:'█';
+    color:var(--brass);
+    margin-left:4px;
+    animation:blink 1.1s steps(1) infinite;
+  }
+  @keyframes blink{50%{opacity:0;}}
+  .clock-block .since-label{
+    color:var(--brass);
+    margin-top:2px;
+  }
+  .clock-block .since-label.none{color:var(--muted);}
+ 
+  /* ---------- layout ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns:240px 1fr;
+    gap:0;
+    min-height:calc(100vh - 64px);
+  }
+  .mobile-toggle{
+    display:none;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 18px;
+    background:var(--panel);
+    border-bottom:1px solid var(--hairline);
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--brass);
+    cursor:pointer;
+    user-select:none;
+  }
+  .mobile-toggle .chevron{
+    transition:transform 0.2s ease;
+    color:var(--muted);
+  }
+  .mobile-toggle.expanded .chevron{transform:rotate(90deg);}
+ 
+  /* ---------- sidebar ---------- */
+  .sidebar{
+    border-right:1px solid var(--hairline);
+    padding:20px 18px;
+  }
+  @media (max-width: 780px){
+    .layout{grid-template-columns:1fr;}
+    .mobile-toggle{display:flex;}
+    .sidebar{
+      border-right:none;
+      max-height:0;
+      overflow:hidden;
+      padding-top:0;
+      padding-bottom:0;
+      border-bottom:none;
+      transition:max-height 0.25s ease;
+    }
+    .sidebar.expanded{
+      max-height:2000px;
+      padding-top:20px;
+      padding-bottom:20px;
+      border-bottom:1px solid var(--hairline);
+    }
+  }
+  .sidebar h2{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 14px;
+  }
+  .select-toggle{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:14px;
+    font-family:var(--mono);
+    font-size:10px;
+  }
+  .select-toggle span{color:var(--hairline);}
+  .select-toggle button{
+    background:none;
+    border:none;
+    color:var(--muted);
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    cursor:pointer;
+    padding:0;
+    text-decoration:underline;
+    text-underline-offset:2px;
+  }
+  .select-toggle button:hover{color:var(--brass);}
+  .group{margin-bottom:20px;}
+  .group-label{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    margin-bottom:8px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .dot{width:7px;height:7px;border-radius:50%;flex:none;}
+  .source-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    padding:5px 0;
+    cursor:pointer;
+    color:var(--paper);
+    user-select:none;
+  }
+  .source-row input{accent-color:var(--brass);cursor:pointer;}
+  .source-row .status{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--muted);
+    flex:none;
+    margin-left:auto;
+  }
+  .status.ok{background:#6FA07C;}
+  .status.partial{background:#D4A24C;}
+  .status.err{background:var(--wire-red);}
+  .status.loading{background:var(--brass);animation:pulse 1s ease-in-out infinite;}
+  @keyframes pulse{50%{opacity:0.3;}}
+ 
+  .sidebar-foot{
+    margin-top:24px;
+    padding-top:16px;
+    border-top:1px solid var(--hairline);
+  }
+  .refresh-btn{
+    width:100%;
+    background:transparent;
+    border:1px solid var(--brass);
+    color:var(--brass);
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    padding:9px 10px;
+    border-radius:2px;
+    cursor:pointer;
+    transition:background 0.15s, color 0.15s;
+  }
+  .refresh-btn:hover{background:var(--brass);color:var(--ink);}
+  .add-feed{margin-top:14px;}
+  .add-feed input{
+    width:100%;
+    background:var(--panel);
+    border:1px solid var(--hairline);
+    color:var(--paper);
+    font-family:var(--mono);
+    font-size:11px;
+    padding:7px 8px;
+    border-radius:2px;
+    margin-bottom:6px;
+  }
+  .add-feed button{
+    width:100%;
+    background:var(--panel);
+    border:1px dashed var(--hairline);
+    color:var(--muted);
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    padding:6px;
+    border-radius:2px;
+    cursor:pointer;
+  }
+  .add-feed button:hover{color:var(--paper);border-color:var(--muted);}
+ 
+  /* ---------- main ---------- */
+  .main{padding:20px 28px 60px;}
+  .toolbar{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .search-box{
+    flex:1;
+    min-width:220px;
+    background:var(--panel);
+    border:1px solid var(--hairline);
+    border-radius:2px;
+    padding:9px 12px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .search-box input{
+    flex:1;
+    background:transparent;
+    border:none;
+    outline:none;
+    color:var(--paper);
+    font-family:var(--sans);
+    font-size:13px;
+  }
+  .search-box input::placeholder{color:var(--muted);}
+  .search-box svg{flex:none;opacity:0.5;}
+  .count-tag{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--muted);
+    white-space:nowrap;
+  }
+ 
+  .feed{
+    border-top:1px solid var(--hairline);
+  }
+  .entry{
+    display:grid;
+    grid-template-columns:150px 1fr;
+    gap:16px;
+    padding:14px 0;
+    border-bottom:1px solid var(--hairline);
+    animation:fadeIn 0.4s ease both;
+    border-left:2px solid transparent;
+    padding-left:10px;
+    margin-left:-12px;
+  }
+  .entry.is-new{
+    border-left-color:var(--brass);
+    background:linear-gradient(90deg, rgba(185,141,75,0.07), transparent 60%);
+  }
+  .new-badge{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:9px;
+    letter-spacing:1px;
+    color:var(--ink);
+    background:var(--brass);
+    padding:1px 5px;
+    border-radius:2px;
+    margin-right:7px;
+    vertical-align:middle;
+    position:relative;
+    top:-1px;
+  }
+  @keyframes fadeIn{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:none;}}
+  @media (max-width:600px){
+    .entry{grid-template-columns:1fr;gap:4px;}
+  }
+  .entry-meta{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--muted);
+    line-height:1.6;
+  }
+  .entry-meta .src-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+  .entry-meta .src-tag .dot{width:6px;height:6px;}
+  .entry-title a{
+    font-family:var(--serif);
+    font-size:16px;
+    line-height:1.4;
+    color:var(--paper);
+    text-decoration:none;
+    border-bottom:1px solid transparent;
+  }
+  .entry-title a:hover{border-bottom-color:var(--brass);color:var(--brass);}
+ 
+  .empty-state, .init-state{
+    padding:60px 20px;
+    text-align:center;
+    color:var(--muted);
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:1px;
+  }
+  .init-state .time{color:var(--brass);}
+ 
+  footer.note{
+    margin-top:24px;
+    font-family:var(--mono);
+    font-size:10px;
+    color:var(--muted);
+    letter-spacing:0.5px;
+    line-height:1.7;
+  }
+
+
+  /* ===== SPORT//WIRE : 1987 NEON OVERRIDE ===== */
+  :root{
+    --ink:#050013; --panel:#0B0620; --panel-2:#12082B;
+    --paper:#F7F2FF; --brass:#00F5FF; --wire-red:#FF2E88;
+    --teal:#B6FF00; --slate:#9B5CFF; --muted:#AFA4D4; --hairline:#3B176D;
+    --serif:'Arial Black', Impact, Haettenschweiler, sans-serif;
+    --mono:'Courier New', Courier, monospace;
+    --sans:Arial, Helvetica, sans-serif;
+  }
+  body{
+    background-color:#050013;
+    background-image:
+      linear-gradient(rgba(0,245,255,.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,79,216,.05) 1px, transparent 1px),
+      radial-gradient(circle at 85% 10%, rgba(255,46,136,.20), transparent 28%),
+      radial-gradient(circle at 12% 72%, rgba(0,245,255,.13), transparent 30%);
+    background-size:32px 32px,32px 32px,auto,auto;
+  }
+  body:before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0,rgba(255,255,255,.018) 1px,transparent 1px,transparent 4px);mix-blend-mode:screen;}
+  ::selection{background:#FF4FD8;color:#050013;}
+  .masthead{padding:22px 26px 18px;border-bottom:3px solid #00F5FF;background:linear-gradient(100deg,#09001c 0%,#1b063a 55%,#3b063d 100%);box-shadow:0 0 24px rgba(0,245,255,.35), inset 0 -1px 0 #FF4FD8;}
+  .masthead h1{font-family:var(--serif);font-style:italic;font-size:38px;letter-spacing:-1px;color:#fff;text-shadow:3px 3px 0 #FF2E88,-3px -2px 0 #00F5FF,0 0 16px #FF4FD8;transform:skew(-5deg);}
+  .masthead .kicker{color:#050013;background:#B6FF00;border:0;font-weight:900;letter-spacing:2.5px;padding:5px 10px;box-shadow:4px 4px 0 #FF2E88;transform:rotate(-1deg);}
+  .clock-block .time{color:#00F5FF;font-size:20px;font-weight:900;text-shadow:0 0 10px #00F5FF;}
+  .clock-block .time::after{color:#FF4FD8}.clock-block .since-label{color:#B6FF00}.clock-block{color:#C3B6EA}
+  .layout{grid-template-columns:255px 1fr}.sidebar{background:linear-gradient(180deg,rgba(18,8,43,.94),rgba(5,0,19,.97));border-right:2px solid #FF4FD8;box-shadow:8px 0 28px rgba(255,79,216,.12)}
+  .sidebar h2,.group-label{font-family:var(--serif);font-style:italic;color:#fff;text-shadow:2px 2px 0 #FF2E88;letter-spacing:1px}.group-label{border-bottom:1px dashed #3B176D;padding-bottom:6px}
+  .source-row{font-family:var(--mono);font-size:12px}.source-row:hover{color:#00F5FF;text-shadow:0 0 8px rgba(0,245,255,.65);transform:translateX(2px)}.source-row input{accent-color:#FF2E88}
+  .status.ok{background:#B6FF00;box-shadow:0 0 7px #B6FF00}.status.partial{background:#FF8A00;box-shadow:0 0 7px #FF8A00}.status.err{background:#FF2E88;box-shadow:0 0 7px #FF2E88}.status.loading{background:#00F5FF;box-shadow:0 0 8px #00F5FF}
+  .refresh-btn{border:2px solid #00F5FF;color:#00F5FF;font-weight:900;box-shadow:3px 3px 0 #FF2E88,0 0 12px rgba(0,245,255,.25);transform:skew(-3deg)}.refresh-btn:hover{background:#00F5FF;color:#050013;box-shadow:5px 5px 0 #B6FF00}
+  .add-feed input,.add-feed button,.search-box{background:#0B0620;border:1px solid #9B5CFF;border-radius:0}.add-feed button{color:#FF4FD8}.add-feed button:hover{border-color:#B6FF00;color:#B6FF00}
+  .main{padding-top:24px}.search-box{box-shadow:inset 3px 0 0 #FF2E88,0 0 14px rgba(155,92,255,.12)}.search-box input{font-family:var(--mono);color:#fff}.count-tag{color:#B6FF00;font-weight:900}
+  .feed{border-top:2px solid #9B5CFF}.entry{border-bottom:1px solid #32135E;padding-top:16px;padding-bottom:16px;transition:.12s ease}.entry:hover{background:linear-gradient(90deg,rgba(255,79,216,.09),rgba(0,245,255,.035));transform:translateX(3px)}.entry.is-new{border-left-color:#FF2E88;background:linear-gradient(90deg,rgba(255,46,136,.14),transparent 65%)}
+  .new-badge{background:#B6FF00;color:#050013;font-weight:900;border-radius:0;box-shadow:2px 2px 0 #FF2E88}.entry-meta{color:#BBAFE0}.entry-title a{font-family:Arial,Helvetica,sans-serif;font-weight:800;font-size:17px;color:#F9F5FF}.entry-title a:hover{color:#00F5FF;border-bottom-color:#FF4FD8;text-shadow:0 0 9px rgba(0,245,255,.4)}
+  .warning-banner{background:#FF2E88;color:#050013;border-bottom:2px solid #B6FF00;font-weight:900}.warning-banner button{color:#050013}.mobile-toggle{background:#12082B;color:#00F5FF;border-bottom:2px solid #FF4FD8}.init-state .time{color:#00F5FF;text-shadow:0 0 8px #00F5FF}footer.note{color:#776B9F}
+  @media(max-width:780px){.masthead h1{font-size:30px}.layout{grid-template-columns:1fr}.sidebar{border-right:0}.main{padding-left:18px;padding-right:18px}}
+
+</style>
+</head>
+<body>
+ 
+<div class="warning-banner" id="warningBanner" style="display:none;">
+  <span id="warningText"></span>
+  <button id="warningDismiss" type="button">✕</button>
+</div>
+<div class="masthead">
+  <div class="masthead-title">
+    <h1>SPORT//WIRE</h1>
+    <span class="kicker">LIVE // LOUD // 24·7</span>
+  </div>
+  <div class="clock-block">
+    <div id="clock" class="time">09:12:27</div>
+    <div id="updatedLabel">updated 09:12:18</div>
+    <div id="sinceLabel" class="since-label">201 new since 25 Sept, 16:49</div>
+  </div>
+</div>
+ 
+<div class="layout">
+  <div class="mobile-toggle" id="mobileToggle">
+    <span id="mobileToggleLabel">Sources (19 of 19 selected)</span>
+    <span class="chevron" id="mobileChevron">▸</span>
+  </div>
+  <div class="sidebar" id="sidebar">
+    <h2>Sources</h2>
+    <div class="select-toggle">
+      <button id="selectAllBtn" type="button">select all</button>
+      <span>·</span>
+      <button id="selectNoneBtn" type="button">select none</button>
+    </div>
+    <div id="groups"><div class="group"><div class="group-label"><span class="dot" style="background:#A63D40"></span>Regulation &amp; Competition</div><label class="source-row">
+        <input type="checkbox" data-id="cma" checked="">
+        <span>CMA (gov.uk)</span>
+        
+        <span class="status ok" id="status-cma"></span>
+      </label><label class="source-row">
+        <input type="checkbox" data-id="ofcom" checked="">
+        <span>Ofcom</span>
+        
+        <span class="status partial" id="status-ofcom"></span>
+      </label></div><div class="group"><div class="group-label"><span class="dot" style="background:#B98D4B"></span>Markets &amp; Economy</div><label class="source-row">
+        <input type="checkbox" data-id="boe" checked="">
+        <span>Bank of England</span>
+        
+        <span class="status ok" id="status-boe"></span>
+      </label><label class="source-row">
+        <input type="checkbox" data-id="bbc-econ" checked="">
+        <span>BBC Economy</span>
+        
+        <span class="status ok" id="status-bbc-econ"></span>
+      </label><label class="source-row">
+        <input type="checkbox" data-id="cityam" checked="">
+        <span>City AM</span>
+        
+        <span class="status ok" id="status-cityam"></span>
+      </label><label class="source-row">
+        <input type="checkbox" data-id="ft-companies" checked="">
+        <span>FT Companies</span>
+        
+        <span class="status ok" id="status-ft-companies"></span>
+      </label></div><div class="group"><div class="group-label"><span class="dot" style="background:#5C8D89"></span>Tech &amp; AI</div><label class="source-row">
+        <input type="checkbox" data-id="bbc-tech" checked="">
+        <span>BBC Technology</span>
+        
+        <span class="status ok" id="status-bbc-tech"></span>
+      </label><label class="source-row">
+        <input type="checkbox" data-id="gu-tech" checked="">
+        <span>Guardian Technology</span>
+        
+        <span class="status ok" id="status-gu-tech"></span>
+      </label></div><div class="group"><div class="group-label"><span class="dot" style="background:#7D5BA6"></span>Companies</div><label class="source-row">
+        <input type="checkbox" data-id="google-uk" checked="">
+        <span>Google UK</span>
+        
+        <span class="status ok" id="status-google-uk"></span>
+      </label><label class="source-row">
+        <input type="checkbox" data-id="revolut" checked="">
+        <span>Revolut</span>
+        
+        <span class="status ok" id="status-revolut"></span>
+      </label></div><div class="group"><div class="group-label"><span class="dot" style="background:#8A93AC"></span>Wires &amp; Papers</div><label class="source-row">
+        <input type="checkbox" data-id="bbc-biz" checked="">
+        <span>BBC Business</span>
+        
+        <span class="status ok" id="status-bbc-biz"></span>
+      </label><label class="source-row">
+        <input type="checkbox" data-id="gu-biz" checked="">
+        <span>Guardian Business</span>
+        
+        <span class="status ok" id="status-gu-biz"></span>
+      </label><label class="source-row">
+        <input type="checkbox" data-id="sky-biz" checked="">
+        <span>Sky News Business</span>
+        
+        <span class="status ok" id="status-sky-biz"></span>
+      </label><label class="source-row">
+        <input type="checkbox" data-id="telegraph" checked="">
+        <span>The Telegraph Business</span>
+        
+        <span class="status err" id="status-telegraph"></span>
+      </label><label class="source-row">
+        <input type="checkbox" data-id="independent-biz" checked="">
+        <span>Independent Business</span>
+        
+        <span class="status ok" id="status-independent-biz"></span>
+      </label><label class="source-row">
+        <input type="checkbox" data-id="times-business" checked="">
+        <span>The Times Business (via Google News)</span>
+        
+        <span class="status ok" id="status-times-business"></span>
+      </label><label class="source-row">
+        <input type="checkbox" data-id="ft-uk" checked="">
+        <span>FT UK</span>
+        
+        <span class="status ok" id="status-ft-uk"></span>
+      </label><label class="source-row">
+        <input type="checkbox" data-id="reuters-uk" checked="">
+        <span>Reuters UK (via Google News)</span>
+        
+        <span class="status err" id="status-reuters-uk"></span>
+      </label><label class="source-row">
+        <input type="checkbox" data-id="bloomberg-uk" checked="">
+        <span>Bloomberg</span>
+        
+        <span class="status ok" id="status-bloomberg-uk"></span>
+      </label></div></div>
+    <div class="sidebar-foot">
+      <button class="refresh-btn" id="refreshBtn">↻ JACK IN // REFRESH</button>
+      <div class="add-feed">
+        <input type="text" id="addUrl" placeholder="paste sports RSS/Atom URL…">
+        <input type="text" id="addName" placeholder="label (e.g. My Club Feed)">
+        <button id="addBtn">+ ADD PIRATE FEED</button>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="main">
+    <div class="toolbar">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8A93AC" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="searchInput" placeholder="Filter the action — team, driver, player, league…">
+      </div>
+      <div class="count-tag" id="countTag">240 headlines · 19 sources</div>
+    </div>
+    <div class="feed" id="feed"><div class="init-state">TUNING SATELLITE FEEDS… <span class="time">STAND BY</span></div></div>
+    <footer class="note">
+      Headlines pulled live from each publisher's own RSS/Atom feed via a read-only CORS relay. Nothing is stored except your source selections, on this device. Click any headline to open the original article.
+    </footer>
+  </div>
+</div>
+ 
+<script>
+const CATS = [
+  {id:'football', label:'Football', color:'#00F5FF'},
+  {id:'oval', label:'Rugby + Cricket', color:'#B6FF00'},
+  {id:'motor', label:'Motorsport', color:'#FF4FD8'},
+  {id:'us', label:'US Sports', color:'#FF8A00'},
+  {id:'global', label:'AFL + Global', color:'#9B5CFF'},
+  {id:'social', label:'X // Insiders', color:'#FF2BD6'},
+];
+ 
+let SOURCES = [
+  {id:'bbc-football', name:'BBC Football', url:'https://feeds.bbci.co.uk/sport/football/rss.xml', cat:'football'},
+  {id:'guardian-football', name:'Guardian Football', url:'https://www.theguardian.com/football/rss', cat:'football'},
+  {id:'pl-wire', name:'Premier League Wire', url:'https://news.google.com/rss/search?q=Premier+League+when:3d&hl=en-GB&gl=GB&ceid=GB:en', cat:'football'},
+  {id:'wsl-wire', name:'Women’s Football', url:'https://news.google.com/rss/search?q=WSL+women%27s+football+when:3d&hl=en-GB&gl=GB&ceid=GB:en', cat:'football'},
+
+  {id:'bbc-cricket', name:'BBC Cricket', url:'https://feeds.bbci.co.uk/sport/cricket/rss.xml', cat:'oval'},
+  {id:'guardian-cricket', name:'Guardian Cricket', url:'https://www.theguardian.com/sport/cricket/rss', cat:'oval'},
+  {id:'bbc-rugby', name:'BBC Rugby Union', url:'https://feeds.bbci.co.uk/sport/rugby-union/rss.xml', cat:'oval'},
+  {id:'guardian-rugby', name:'Guardian Rugby', url:'https://www.theguardian.com/sport/rugby-union/rss', cat:'oval'},
+
+  {id:'bbc-f1', name:'BBC Formula 1', url:'https://feeds.bbci.co.uk/sport/formula1/rss.xml', cat:'motor'},
+  {id:'guardian-f1', name:'Guardian Formula 1', url:'https://www.theguardian.com/sport/formulaone/rss', cat:'motor'},
+  {id:'motorsport-wire', name:'Motorsport Wire', url:'https://news.google.com/rss/search?q=Formula+1+OR+MotoGP+OR+IndyCar+when:3d&hl=en-GB&gl=GB&ceid=GB:en', cat:'motor'},
+
+  {id:'nfl-wire', name:'NFL Wire', url:'https://news.google.com/rss/search?q=NFL+when:3d&hl=en-US&gl=US&ceid=US:en', cat:'us'},
+  {id:'nba-wire', name:'NBA Wire', url:'https://news.google.com/rss/search?q=NBA+when:3d&hl=en-US&gl=US&ceid=US:en', cat:'us'},
+  {id:'mlb-wire', name:'MLB Wire', url:'https://news.google.com/rss/search?q=MLB+when:3d&hl=en-US&gl=US&ceid=US:en', cat:'us'},
+
+  {id:'afl-wire', name:'AFL Wire', url:'https://news.google.com/rss/search?q=AFL+Australian+Football+League+when:3d&hl=en-AU&gl=AU&ceid=AU:en', cat:'global'},
+  {id:'guardian-sport', name:'Guardian Sport', url:'https://www.theguardian.com/sport/rss', cat:'global'},
+  {id:'tennis-wire', name:'Tennis Wire', url:'https://news.google.com/rss/search?q=ATP+OR+WTA+tennis+when:3d&hl=en-GB&gl=GB&ceid=GB:en', cat:'global'},
+
+  // X // INSIDERS — no API key required. These use Google News RSS as a lightweight
+  // public index of posts/mentions from the named X accounts. Coverage is best-effort:
+  // X does not expose a normal public RSS feed, so not every post will appear.
+  {id:'x-ornstein', name:'X · David Ornstein', url:'https://news.google.com/rss/search?q=site%3Ax.com%2FDavid_Ornstein+OR+%22David+Ornstein%22+when%3A3d&hl=en-GB&gl=GB&ceid=GB:en', cat:'social'},
+  {id:'x-romano', name:'X · Fabrizio Romano', url:'https://news.google.com/rss/search?q=site%3Ax.com%2FFabrizioRomano+OR+%22Fabrizio+Romano%22+when%3A3d&hl=en-GB&gl=GB&ceid=GB:en', cat:'social'},
+  {id:'x-shams', name:'X · Shams Charania', url:'https://news.google.com/rss/search?q=site%3Ax.com%2FShamsCharania+OR+%22Shams+Charania%22+when%3A3d&hl=en-US&gl=US&ceid=US:en', cat:'social'},
+  {id:'x-schefter', name:'X · Adam Schefter', url:'https://news.google.com/rss/search?q=site%3Ax.com%2FAdamSchefter+OR+%22Adam+Schefter%22+when%3A3d&hl=en-US&gl=US&ceid=US:en', cat:'social'},
+];
+ 
+let selected = new Set(SOURCES.filter(s => !s.defaultOff).map(s => s.id));
+let allItems = [];
+let statusMap = {};
+let lastPullTime = 0;
+let sourceItemsCache = {}; // source.id -> last successfully fetched items, used as fallback on transient failures
+ 
+// ---------- persistence (real browser localStorage — this runs as a normal hosted page) ----------
+let sessionBaseline = null; // timestamp of the previous visit, used to flag "new" items this session
+ 
+function loadPrefs(){
+  try{
+    const raw = localStorage.getItem('wire-desk-selected');
+    if(raw){
+      const arr = JSON.parse(raw);
+      selected = new Set(arr);
+      // any default source not present in the saved selection is a newly-added one — default it to checked
+      SOURCES.filter(s => !s.custom && !s.defaultOff).forEach(s => { if(!arr.includes(s.id)) selected.add(s.id); });
+    }
+  }catch(e){ /* no saved prefs yet */ }
+  try{
+    const raw = localStorage.getItem('wire-desk-custom');
+    if(raw){
+      const custom = JSON.parse(raw);
+      custom.forEach(c => { if(!SOURCES.find(s=>s.id===c.id)) SOURCES.push(c); });
+      custom.forEach(c => selected.add(c.id));
+    }
+  }catch(e){ /* no custom feeds saved */ }
+}
+function savePrefs(){
+  try{ localStorage.setItem('wire-desk-selected', JSON.stringify([...selected])); }catch(e){}
+}
+function saveCustom(){
+  const custom = SOURCES.filter(s => s.custom);
+  try{ localStorage.setItem('wire-desk-custom', JSON.stringify(custom)); }catch(e){}
+}
+function initLastVisit(){
+  try{
+    const stored = localStorage.getItem('wire-desk-last-visit');
+    sessionBaseline = stored ? new Date(stored) : null;
+    // note: we deliberately do NOT overwrite the stored timestamp here.
+    // if we did, opening a second tab would immediately reset the baseline
+    // out from under the first tab. instead we advance it only when this
+    // tab is actually hidden/closed — see markVisitEnd() below.
+  }catch(e){ sessionBaseline = null; }
+}
+function markVisitEnd(){
+  try{ localStorage.setItem('wire-desk-last-visit', new Date().toISOString()); }catch(e){}
+}
+ 
+// ---------- clock ----------
+function tickClock(){
+  const d = new Date();
+  document.getElementById('clock').textContent = d.toLocaleTimeString('en-GB', {hour12:false});
+}
+setInterval(tickClock, 1000);
+tickClock();
+ 
+// ---------- sidebar rendering ----------
+function renderSidebar(){
+  updateMobileToggleLabel();
+  const container = document.getElementById('groups');
+  container.innerHTML = '';
+  CATS.forEach(cat => {
+    const srcs = SOURCES.filter(s => s.cat === cat.id);
+    if(!srcs.length) return;
+    const group = document.createElement('div');
+    group.className = 'group';
+    const label = document.createElement('div');
+    label.className = 'group-label';
+    label.innerHTML = `<span class="dot" style="background:${cat.color}"></span>${cat.label}`;
+    group.appendChild(label);
+    srcs.forEach(s => {
+      const row = document.createElement('label');
+      row.className = 'source-row';
+      row.innerHTML = `
+        <input type="checkbox" data-id="${s.id}" ${selected.has(s.id) ? 'checked' : ''}>
+        <span>${s.name}</span>
+        ${s.custom ? `<span class="remove-btn" data-remove-id="${s.id}" title="remove this source">✕</span>` : ''}
+        <span class="status" id="status-${s.id}"></span>
+      `;
+      group.appendChild(row);
+    });
+    container.appendChild(group);
+  });
+  container.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', e => {
+      const id = e.target.dataset.id;
+      if(e.target.checked) selected.add(id); else selected.delete(id);
+      savePrefs();
+      updateMobileToggleLabel();
+      renderFeed();
+    });
+  });
+  container.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      const id = e.target.dataset.removeId;
+      SOURCES = SOURCES.filter(s => s.id !== id);
+      selected.delete(id);
+      allItems = allItems.filter(it => it.source !== (SOURCES.find(s => s.id === id)?.name));
+      delete sourceItemsCache[id];
+      saveCustom();
+      savePrefs();
+      renderSidebar();
+      renderFeed();
+    });
+  });
+}
+ 
+// ---------- fetching ----------
+function setStatus(id, cls){
+  const el = document.getElementById(`status-${id}`);
+  if(el){ el.className = 'status ' + cls; }
+}
+ 
+function textOf(node, selector){
+  const el = node.querySelector(selector);
+  return el ? el.textContent.trim() : '';
+}
+ 
+function parseFeedXML(xmlText, source){
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlText, 'text/xml');
+  if(doc.querySelector('parsererror')) throw new Error('parse error');
+  const items = [];
+  const rssItems = doc.querySelectorAll('item');
+  if(rssItems.length){
+    rssItems.forEach(item => {
+      const title = textOf(item, 'title');
+      const link = textOf(item, 'link');
+      const dateStr = textOf(item, 'pubDate') || textOf(item, 'date');
+      items.push({title, link, date: dateStr ? new Date(dateStr) : new Date(0), source: source.name, cat: source.cat});
+    });
+  } else {
+    const entries = doc.querySelectorAll('entry');
+    entries.forEach(entry => {
+      const title = textOf(entry, 'title');
+      let link = '';
+      const linkEl = entry.querySelector('link');
+      if(linkEl) link = linkEl.getAttribute('href') || linkEl.textContent;
+      const dateStr = textOf(entry, 'updated') || textOf(entry, 'published');
+      items.push({title, link, date: dateStr ? new Date(dateStr) : new Date(0), source: source.name, cat: source.cat});
+    });
+  }
+  return items;
+}
+ 
+// ---------- global request throttling ----------
+// Alex's own Cloudflare Worker — reliable, owned infrastructure, no rate-limit
+// roulette. The old free public relays are kept below purely as a last-resort
+// fallback in case the Worker itself is ever down, but should rarely be needed.
+const OWN_PROXY = 'https://monitoring-desk-proxy.alex-bacon.workers.dev/?url=';
+ 
+async function fetchViaProxy(rawUrl){
+  // append a cache-busting param so the target URL looks unique each call —
+  // proxies can cache responses server-side, which can mask fresh headlines
+  const bust = 'cb=' + Date.now();
+  const url = rawUrl + (rawUrl.includes('?') ? '&' : '?') + bust;
+ 
+  const attempts = [
+    OWN_PROXY + encodeURIComponent(url),
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&_=' + Date.now(),
+    'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url) + '&_=' + Date.now(),
+  ];
+ 
+  let lastErr;
+  for(const p of attempts){
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // give up on a slow attempt after 8s
+    try{
+      const res = await fetch(p, {cache:'no-store', signal: controller.signal});
+      clearTimeout(timeoutId);
+      if(!res.ok) throw new Error('bad status ' + res.status);
+      const text = await res.text();
+      if(!text || text.length < 30) throw new Error('empty body');
+      return text;
+    }catch(e){
+      clearTimeout(timeoutId);
+      lastErr = e.name === 'AbortError' ? new Error('timed out') : e;
+      console.warn('proxy failed:', p, lastErr.message);
+    }
+  }
+  throw lastErr || new Error('all proxies failed');
+}
+ 
+async function fetchSource(source){
+  setStatus(source.id, 'loading');
+  const urlEntries = Array.isArray(source.url) ? source.url : [source.url];
+  const results = await Promise.allSettled(urlEntries.map(async entry => {
+    // an entry can be a plain URL string, or {url, filter:[...]} to only keep
+    // headlines containing at least one of the given keywords (case-insensitive)
+    const u = typeof entry === 'string' ? entry : entry.url;
+    const filterWords = (typeof entry === 'object' && entry.filter) ? entry.filter : null;
+    const xml = await fetchViaProxy(u);
+    let items = parseFeedXML(xml, source);
+    if(filterWords && filterWords.length){
+      const lowered = filterWords.map(w => w.toLowerCase());
+      items = items.filter(it => lowered.some(w => it.title.toLowerCase().includes(w)));
+    }
+    return items;
+  }));
+  const items = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+  const anySucceeded = results.some(r => r.status === 'fulfilled');
+ 
+  if(anySucceeded){
+    // de-dupe by link, in case two feeds for the same source happen to both carry the same story
+    const seen = new Set();
+    const deduped = items.filter(it => {
+      if(seen.has(it.link)) return false;
+      seen.add(it.link);
+      return true;
+    });
+    sourceItemsCache[source.id] = deduped; // remember as last-known-good
+    setStatus(source.id, results.every(r => r.status === 'fulfilled') ? 'ok' : 'partial');
+    return deduped;
+  } else {
+    setStatus(source.id, 'err');
+    // every url failed this round — fall back to whatever we last successfully fetched
+    return sourceItemsCache[source.id] || [];
+  }
+}
+ 
+async function pullWire(){
+  lastPullTime = Date.now();
+  document.getElementById('refreshBtn').textContent = '↻ Pulling…';
+  document.getElementById('countTag').textContent = 'loading…';
+  const results = await Promise.allSettled(SOURCES.map(s => fetchSource(s)));
+  allItems = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+  allItems.sort((a,b) => b.date - a.date);
+  document.getElementById('refreshBtn').textContent = '↻ JACK IN // REFRESH';
+  document.getElementById('updatedLabel').textContent = 'updated ' + new Date().toLocaleTimeString('en-GB', {hour12:false});
+ 
+  const allFailedThisRound = SOURCES.length > 0 && SOURCES.every(s => document.getElementById(`status-${s.id}`)?.classList.contains('err'));
+  if(allFailedThisRound && allItems.length === 0){
+    showWarning('⚠ Every source failed to load. Don\'t worry, Alex is fixing it!');
+  }
+ 
+  renderFeed();
+}
+ 
+// ---------- rendering feed ----------
+function catColor(catId){
+  const c = CATS.find(c => c.id === catId);
+  return c ? c.color : '#8A93AC';
+}
+ 
+const MAX_ITEM_AGE_HOURS = 72; // hide anything older than this from the main feed —
+// prevents stale fallback-cached items (from a source that's been down a while)
+// from silently piling up and cluttering the wire with old news
+ 
+function renderFeed(){
+  const query = document.getElementById('searchInput').value.trim().toLowerCase();
+  const feedEl = document.getElementById('feed');
+  const cutoff = Date.now() - MAX_ITEM_AGE_HOURS * 60 * 60 * 1000;
+  const notTooOld = allItems.filter(it => isNaN(it.date.getTime()) || it.date.getTime() >= cutoff);
+  const visible = notTooOld.filter(it => selected.has(SOURCES.find(s => s.name === it.source)?.id || '__none__'));
+  const filtered = query ? visible.filter(it => it.title.toLowerCase().includes(query)) : visible;
+ 
+  const newCount = visible.filter(it => sessionBaseline && it.date > sessionBaseline && !isNaN(it.date.getTime())).length;
+  const sinceEl = document.getElementById('sinceLabel');
+  if(sessionBaseline){
+    if(newCount > 0){
+      sinceEl.textContent = `${newCount} new since ${sessionBaseline.toLocaleString('en-GB', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', hour12:false})}`;
+      sinceEl.className = 'since-label';
+    } else {
+      sinceEl.textContent = `nothing new since ${sessionBaseline.toLocaleString('en-GB', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', hour12:false})}`;
+      sinceEl.className = 'since-label none';
+    }
+  } else {
+    sinceEl.textContent = 'first visit — nothing to compare yet';
+    sinceEl.className = 'since-label none';
+  }
+ 
+  document.getElementById('countTag').textContent = `${filtered.length} headlines · ${selected.size} sources`;
+ 
+  if(!filtered.length){
+    const allFailed = allItems.length === 0 && SOURCES.some(s => document.getElementById(`status-${s.id}`)?.classList.contains('err'));
+    if(allFailed){
+      feedEl.innerHTML = `<div class="empty-state">Every source failed to load. Don't worry, Alex is fixing it!</div>`;
+    } else {
+      feedEl.innerHTML = `<div class="empty-state">No headlines match right now.<br>Try a different filter, or tick more sources.</div>`;
+    }
+    return;
+  }
+ 
+  feedEl.innerHTML = filtered.slice(0, 200).map(it => {
+    const time = isNaN(it.date.getTime()) ? '' : it.date.toLocaleString('en-GB', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', hour12:false});
+    const color = catColor(it.cat);
+    const isNew = sessionBaseline && it.date > sessionBaseline && !isNaN(it.date.getTime());
+    return `
+      <div class="entry ${isNew ? 'is-new' : ''}">
+        <div class="entry-meta">
+          <div>${time}</div>
+          <div class="src-tag"><span class="dot" style="background:${color}"></span>${it.source}</div>
+        </div>
+        <div class="entry-title">
+          ${isNew ? '<span class="new-badge">NEW</span>' : ''}<a href="${it.link}" target="_blank" rel="noopener noreferrer">${it.title}</a>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+ 
+// ---------- events ----------
+document.getElementById('selectAllBtn').addEventListener('click', () => {
+  selected = new Set(SOURCES.map(s => s.id));
+  renderSidebar();
+  savePrefs();
+  renderFeed();
+});
+document.getElementById('selectNoneBtn').addEventListener('click', () => {
+  selected = new Set();
+  renderSidebar();
+  savePrefs();
+  renderFeed();
+});
+document.getElementById('searchInput').addEventListener('input', renderFeed);
+document.getElementById('refreshBtn').addEventListener('click', pullWire);
+ 
+document.getElementById('mobileToggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('expanded');
+  document.getElementById('mobileToggle').classList.toggle('expanded');
+});
+function updateMobileToggleLabel(){
+  const el = document.getElementById('mobileToggleLabel');
+  if(el) el.textContent = `Sources (${selected.size} of ${SOURCES.length} selected)`;
+}
+document.getElementById('addBtn').addEventListener('click', async () => {
+  const urlInput = document.getElementById('addUrl');
+  const nameInput = document.getElementById('addName');
+  const url = urlInput.value.trim();
+  const name = nameInput.value.trim();
+  const btn = document.getElementById('addBtn');
+  const originalLabel = btn.textContent;
+ 
+  if(!url || !name){
+    btn.textContent = '⚠ need URL and a label';
+    btn.style.color = 'var(--wire-red)';
+    btn.style.borderColor = 'var(--wire-red)';
+    setTimeout(() => { btn.textContent = originalLabel; btn.style.color = ''; btn.style.borderColor = ''; }, 2500);
+    return;
+  }
+  if(!/^https?:\/\//i.test(url)){
+    btn.textContent = '⚠ URL must start with http(s)://';
+    btn.style.color = 'var(--wire-red)';
+    btn.style.borderColor = 'var(--wire-red)';
+    setTimeout(() => { btn.textContent = originalLabel; btn.style.color = ''; btn.style.borderColor = ''; }, 2500);
+    return;
+  }
+ 
+  const id = 'custom-' + Date.now();
+  const src = {id, name, url, cat:'wire', custom:true};
+  SOURCES.push(src);
+  selected.add(id);
+  urlInput.value = '';
+  nameInput.value = '';
+  renderSidebar();
+  saveCustom();
+  savePrefs();
+ 
+  btn.textContent = '✓ added — fetching…';
+  setStatus(id, 'loading');
+  try{
+    const items = await fetchSource(src);
+    allItems = allItems.concat(items);
+    allItems.sort((a,b) => b.date - a.date);
+    renderFeed();
+    btn.textContent = items.length ? `✓ added, ${items.length} headlines found` : '⚠ added, but feed returned nothing';
+  }catch(e){
+    btn.textContent = '⚠ added, but that feed failed to load';
+  }
+  setTimeout(() => { btn.textContent = originalLabel; }, 3500);
+});
+ 
+// ---------- diagnostics ----------
+function showWarning(text){
+  document.getElementById('warningText').textContent = text;
+  document.getElementById('warningBanner').style.display = 'flex';
+}
+document.getElementById('warningDismiss').addEventListener('click', () => {
+  document.getElementById('warningBanner').style.display = 'none';
+});
+function checkStorageWorks(){
+  try{
+    const testKey = 'wire-desk-storage-test';
+    localStorage.setItem(testKey, '1');
+    const ok = localStorage.getItem(testKey) === '1';
+    localStorage.removeItem(testKey);
+    return ok;
+  }catch(e){
+    return false;
+  }
+}
+ 
+// ---------- init ----------
+(async function init(){
+  if(!checkStorageWorks()){
+    showWarning('⚠ This browser is blocking saved data, so some settings won\'t be remembered between visits. Don\'t worry, Alex is on it!');
+  }
+  loadPrefs();
+  initLastVisit();
+  renderSidebar();
+  await pullWire();
+  setInterval(pullWire, 5 * 60 * 1000); // auto-refresh every 5 minutes while tab is active
+ 
+  // background tabs get throttled/frozen by the browser, so the interval above can silently
+  // stop firing — catch up whenever the tab becomes visible/focused again instead
+  function refreshIfStale(){
+    if(Date.now() - lastPullTime > 60 * 1000) pullWire();
+  }
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'visible') refreshIfStale();
+    if(document.visibilityState === 'hidden') markVisitEnd();
+  });
+  window.addEventListener('focus', refreshIfStale);
+  window.addEventListener('beforeunload', markVisitEnd);
+  // pagehide fires far more reliably than beforeunload on mobile browsers
+  // (especially iOS Safari), which is where the 'since last visit' tracking
+  // was most likely to silently never save
+  window.addEventListener('pagehide', markVisitEnd);
+  // safety net: even if no leave-event ever fires (e.g. the app gets force-quit
+  // rather than closed cleanly), periodically checkpoint the timestamp so the
+  // next visit still has something recent to compare against, not nothing
+  setInterval(markVisitEnd, 3 * 60 * 1000);
+})();
+</script>
+
+
+ 
+</body></html>
